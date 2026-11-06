@@ -9,7 +9,7 @@ import os
 st.set_page_config(page_title="Evaluación de Eficiencia del IFE", layout="wide")
 
 # Título limpio sin emojis principales
-st.title("Evaluación de Eficiencia del IFE - Microdatos EPH (2ºT 2020)")
+st.title("Evaluación de Eficiencia del IFE - Microdatos EPH (2ºTrimestre 2020)")
 
 # ---------------------------------------------------------
 # FUNCIONES DE FORMATO NUMÉRICO ARGENTINO
