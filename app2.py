@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
+
 # Configuración de página
 st.set_page_config(page_title="Evaluación de Eficiencia del IFE", layout="wide")
 
@@ -188,56 +189,57 @@ if df_hogar is not None and df_indiv is not None:
     mc3.metric("Transferencia Variable", f"Cobertura: {cobertura_variable_pct:.1f}%", "Excedente / Remanente: $0")
 
     # ---------------------------------------------------------
-    # 3. VISUALIZACIONES
+    # 3. VISUALIZACIONES (GRÁFICOS UNO ABAJO DEL OTRO)
     # ---------------------------------------------------------
     st.markdown("---")
-    col_graf1, col_graf2 = st.columns(2)
 
-    with col_graf1:
-        st.subheader("Distribución Ponderada de la Brecha de Ingresos")
-        fig1, ax1 = plt.subplots(figsize=(7, 5))
-        
-        # Filtro para gráfico visualizando hasta $100.000
-        df_graf = df_target[df_target['brecha_ingresos'] < 100000]
-        
-        # Histograma usando PONDIH como peso (Ponderación poblacional)
-        ax1.hist(df_graf['brecha_ingresos'], bins=35, weights=df_graf['PONDIH'], color='#1d3557', edgecolor='white', alpha=0.85)
-        
-        ax1.axvline(IFE_REAL, color='#e63946', linestyle='--', linewidth=2, label=f'IFE Real ({fmt_ar(IFE_REAL)})')
-        ax1.axvline(monto_optimo_fijo, color='#2a9d8f', linestyle='--', linewidth=2, label=f'Monto Óptimo ({fmt_ar(monto_optimo_fijo)})')
+    # Gráfico 1: Ancho completo (Grande)
+    st.subheader("Distribución Ponderada de la Brecha de Ingresos")
+    fig1, ax1 = plt.subplots(figsize=(10, 4.5))
+    
+    # Filtro para gráfico visualizando hasta $100.000
+    df_graf = df_target[df_target['brecha_ingresos'] < 100000]
+    
+    # Histograma usando PONDIH como peso (Ponderación poblacional)
+    ax1.hist(df_graf['brecha_ingresos'], bins=35, weights=df_graf['PONDIH'], color='#1d3557', edgecolor='white', alpha=0.85)
+    
+    ax1.axvline(IFE_REAL, color='#e63946', linestyle='--', linewidth=2, label=f'IFE Real ({fmt_ar(IFE_REAL)})')
+    ax1.axvline(monto_optimo_fijo, color='#2a9d8f', linestyle='--', linewidth=2, label=f'Monto Óptimo ({fmt_ar(monto_optimo_fijo)})')
 
-        ax1.set_xlabel('Brecha de Ingresos del Hogar ($ ARS)', fontsize=10)
-        ax1.set_ylabel('Hogares Ponderados (Población)', fontsize=10)
-        
-        # Formato de miles en el eje Y
-        ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x)).replace(",", ".")))
-        ax1.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x)).replace(",", ".")))
+    ax1.set_xlabel('Brecha de Ingresos del Hogar ($ ARS)', fontsize=10)
+    ax1.set_ylabel('Hogares Ponderados (Población)', fontsize=10)
+    
+    # Formato de miles en el eje Y
+    ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x)).replace(",", ".")))
+    ax1.xaxis.set_major_formatter(plt.FuncFormatter(lambda x, loc: "{:,}".format(int(x)).replace(",", ".")))
 
-        ax1.legend(loc='upper right', fontsize=9)
-        ax1.grid(axis='y', linestyle='--', alpha=0.4)
-        st.pyplot(fig1)
+    ax1.legend(loc='upper right', fontsize=9)
+    ax1.grid(axis='y', linestyle='--', alpha=0.4)
+    st.pyplot(fig1)
 
-    with col_graf2:
-        st.subheader("Comparativa de Escenarios: Uso del Presupuesto")
-        fig2, ax2 = plt.subplots(figsize=(7, 5))
-        
-        escenarios = ['IFE Real\n($10.000)', 'IFE Óptimo Fijo\n($17.205)', 'Transferencia\nVariable']
-        
-        # Convertir a Miles de Millones
-        cobertura_efectiva = np.array([costo_ife_real - sobre_ife_total, costo_optimo_total - sobre_optimo_total, costo_variable_total]) / 1e9
-        sobre_transf = np.array([sobre_ife_total, sobre_optimo_total, 0.0]) / 1e9
-        brecha_remanente = np.array([remanente_ife_total, remanente_optimo_total, 0.0]) / 1e9
+    st.markdown("---")
 
-        bars1 = ax2.bar(escenarios, cobertura_efectiva, label='Brecha Cubierta Efectiva', color='#2ec4b6', width=0.45)
-        bars2 = ax2.bar(escenarios, sobre_transf, bottom=cobertura_efectiva, label='Sobre-transferencia (Excedente)', color='#ff9f1c', width=0.45)
-        bars3 = ax2.bar(escenarios, brecha_remanente, bottom=cobertura_efectiva + sobre_transf, label='Brecha Sin Cubrir (Pobreza Remanente)', color='#e71d36', width=0.45)
+    # Gráfico 2: Abajo, también con buen ancho
+    st.subheader("Comparativa de Escenarios: Uso del Presupuesto")
+    fig2, ax2 = plt.subplots(figsize=(10, 4.5))
+    
+    escenarios = ['IFE Real\n($10.000)', 'IFE Óptimo Fijo\n($17.205)', 'Transferencia\nVariable']
+    
+    # Convertir a Miles de Millones
+    cobertura_efectiva = np.array([costo_ife_real - sobre_ife_total, costo_optimo_total - sobre_optimo_total, costo_variable_total]) / 1e9
+    sobre_transf = np.array([sobre_ife_total, sobre_optimo_total, 0.0]) / 1e9
+    brecha_remanente = np.array([remanente_ife_total, remanente_optimo_total, 0.0]) / 1e9
 
-        ax2.set_ylabel('Miles de Millones de Pesos ($ ARS)', fontsize=10)
-        ax2.set_ylim(0, max(costo_optimo_total + remanente_optimo_total, costo_ife_real + remanente_ife_total) / 1e9 * 1.15)
-        ax2.legend(loc='upper right', fontsize=8)
-        ax2.grid(axis='y', linestyle='--', alpha=0.4)
-        
-        st.pyplot(fig2)
+    bars1 = ax2.bar(escenarios, cobertura_efectiva, label='Brecha Cubierta Efectiva', color='#2ec4b6', width=0.45)
+    bars2 = ax2.bar(escenarios, sobre_transf, bottom=cobertura_efectiva, label='Sobre-transferencia (Excedente)', color='#ff9f1c', width=0.45)
+    bars3 = ax2.bar(escenarios, brecha_remanente, bottom=cobertura_efectiva + sobre_transf, label='Brecha Sin Cubrir (Pobreza Remanente)', color='#e71d36', width=0.45)
+
+    ax2.set_ylabel('Miles de Millones de Pesos ($ ARS)', fontsize=10)
+    ax2.set_ylim(0, max(costo_optimo_total + remanente_optimo_total, costo_ife_real + remanente_ife_total) / 1e9 * 1.15)
+    ax2.legend(loc='upper right', fontsize=8)
+    ax2.grid(axis='y', linestyle='--', alpha=0.4)
+    
+    st.pyplot(fig2)
 
     # ---------------------------------------------------------
     # 4. SECCIÓN METODOLÓGICA (DESPLEGABLE)
